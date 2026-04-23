@@ -1,4 +1,4 @@
-import { Calendar, ChevronDown, Download, Search, Store } from "lucide-react";
+import { Calendar, ChevronDown, Download, LogOut, Search, Settings as SettingsIcon, Store, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,14 +9,32 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { BRANDS, CURRENT_BRAND, RETAILER } from "@/lib/mock";
+import { BRANDS, RETAILER } from "@/lib/mock";
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "@/lib/auth";
+import { toast } from "sonner";
 
 const ranges = ["Últimos 7 días", "Últimos 30 días", "Últimos 90 días", "Año actual", "Personalizado"];
 
 export function Topbar() {
-  const [brand, setBrand] = useState(CURRENT_BRAND);
+  const { user, logout, updateProfile } = useAuth(); // ← Lógica del primero
+  const nav = useNavigate();
+  const [brand, setBrand] = useState(user?.brand ?? BRANDS[0]);
   const [range, setRange] = useState("Últimos 90 días");
+
+  const onBrandChange = async (b: string) => {
+    setBrand(b);
+    try {
+      await updateProfile({ brand: b }); // ← Lógica del primero
+    } catch {}
+  };
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Sesión cerrada"); // ← Lógica del primero
+    nav("/login", { replace: true });
+  };
 
   return (
     <header className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur-md">
@@ -40,13 +58,18 @@ export function Topbar() {
               <DropdownMenuLabel className="text-xs">Marca actual (products.brand)</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {BRANDS.map((b) => (
-                <DropdownMenuItem key={b} onClick={() => setBrand(b)}>
+                <DropdownMenuItem key={b} onClick={() => onBrandChange(b)}>
                   {b}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        <span className="hidden md:inline-flex chip border-success/20 bg-success/10 text-success ml-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+          MV actualizadas hace 12 min
+        </span>
 
         <div className="flex-1" />
 
@@ -84,19 +107,34 @@ export function Topbar() {
           <DropdownMenuTrigger asChild>
             <button className="ml-1">
               <Avatar className="h-8 w-8 ring-2 ring-primary/15">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">AM</AvatarFallback>
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                  {user?.initials ?? "U"} {/* ← Lógica del primero */}
+                </AvatarFallback>
               </Avatar>
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
+          <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>
-              <div className="font-medium">Ana Morales</div>
-              <div className="text-xs text-muted-foreground font-normal">Brand Manager · {brand}</div>
+              <div className="font-medium">{user?.name ?? "Invitado"}</div>
+              <div className="text-xs text-muted-foreground font-normal">
+                {user?.role ?? "—"} · {brand}
+              </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Configuración</DropdownMenuItem>
-            <DropdownMenuItem>Equipo</DropdownMenuItem>
-            <DropdownMenuItem>Cerrar sesión</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/perfil" className="cursor-pointer">
+                <UserIcon className="h-4 w-4" /> Perfil
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/configuracion" className="cursor-pointer">
+                <SettingsIcon className="h-4 w-4" /> Configuración
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+              <LogOut className="h-4 w-4" /> Cerrar sesión
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
