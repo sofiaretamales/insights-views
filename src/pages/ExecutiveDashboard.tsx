@@ -158,35 +158,6 @@ export default function ExecutiveDashboard() {
           </div>
         </Panel>
       </div>
-
-      {/* Insights */}
-      <Panel
-        title="Insights destacados"
-        description="Hallazgos derivados de reglas analíticas sobre las materialized views"
-        action={<span className="chip"><Sparkles className="h-3 w-3 text-primary" /> redactado con IA</span>}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {execInsights.map((it, i) => (
-            <div key={i} className="rounded-lg border border-border p-4 bg-muted/20">
-              <div className="flex items-start gap-3">
-                <div className={
-                  "h-8 w-8 rounded-md shrink-0 flex items-center justify-center " +
-                  (it.type === "positive" ? "bg-success/10 text-success" :
-                   it.type === "warning" ? "bg-warning/10 text-warning" : "bg-info/10 text-info")
-                }>
-                  {it.type === "positive" ? <TrendingUp className="h-4 w-4" /> :
-                   it.type === "warning" ? <AlertTriangle className="h-4 w-4" /> :
-                   <Sparkles className="h-4 w-4" />}
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-foreground">{it.title}</div>
-                  <div className="text-sm text-muted-foreground mt-0.5">{it.body}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Panel>
     </div>
   );
 }
